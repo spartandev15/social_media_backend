@@ -166,11 +166,11 @@ class AuthController extends Controller
             'email' => $request->input('email'),
             'password' => $request->input('password')
             ]) ){
-            $user = Auth::select('username', 'firstname', 'lastname', 'email', 'phone', 'age', 'gender', 'role')->user();
+            $user = Auth::user();
             $token = $user->createToken($user->email.'_api_token')->plainTextToken;
             return response()->json([
                 'status' => true,
-                'user' => $user,
+                'user' => $user->only(['id', 'username', 'firstname', 'lastname', 'email', 'phone', 'age', 'gender', 'role', 'plan']),
                 'token' => $token,
                 'role' => "user",
             ], 200);

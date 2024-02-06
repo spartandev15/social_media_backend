@@ -9,4 +9,3 @@
 <p>If you did not request a Password Reset link, no further action is required. And Please make sure to change your account's password.</p>
 
 <p > Thank You </p>
-                
