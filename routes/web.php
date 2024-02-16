@@ -20,6 +20,7 @@ Route::get('/', function () {
 Route::get('/clear-cache', function() {
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
+    Artisan::call('config:cache');
     Artisan::call('route:clear'); // Clear the route cache
     Artisan::call('view:clear'); // Clear the view cache
     echo "Done";

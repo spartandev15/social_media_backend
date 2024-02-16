@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('firstname');
             $table->string('lastname');
             $table->string('username')->unique();
@@ -23,6 +23,13 @@ return new class extends Migration
             $table->integer('age')->nullable();
             $table->tinyInteger('age_confirmed')->default(0);
             $table->string('gender')->nullable();
+            $table->string('ethnicity')->nullable();
+            $table->string('height')->nullable();
+            $table->string('breast_size')->nullable();
+            $table->string('eye_color')->nullable();
+            $table->string('hair_color')->nullable();
+            $table->string('body_type')->nullable();
+            $table->string('profile_photo')->nullable();
             $table->string('street_address')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
@@ -32,8 +39,10 @@ return new class extends Migration
             $table->tinyInteger('email_verified')->default(0);
             $table->string('role')->default('Advertiser');
             $table->string('plan')->nullable();
+            $table->string('deleted_by')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

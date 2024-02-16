@@ -6,11 +6,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+    use HasUlids;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +32,13 @@ class User extends Authenticatable
         'age',
         'age_confirmed',
         'gender',
+        'ethnicity',
+        'height',
+        'breast_size',
+        'eye_color',
+        'hair_color',
+        'body_type',
+        'profile_photo',
         'street_address',
         'city',
         'state',
@@ -36,6 +48,7 @@ class User extends Authenticatable
         'email_verified',
         'role',
         'plan',
+        'deleted_by',
     ];
 
     
@@ -55,6 +68,7 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'id' => 'string',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

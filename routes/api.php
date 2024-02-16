@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,3 +28,8 @@ Route::post('/send-otp', [AuthController::class, 'sendOTP']);
 Route::post('/forgot-password', [AuthController::class, 'forgotpassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/get-user', [UserController::class, 'getUser']);
+    Route::post('/update-profile', [UserController::class, 'updateProfile']);
+});

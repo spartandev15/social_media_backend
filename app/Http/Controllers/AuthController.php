@@ -61,7 +61,6 @@ class AuthController extends Controller
     }
 
     public function register(Request $request){
-        // dd($request->all());
         $inputValidation = Validator::make($request->all(), [
             "username" => 'required',
             "firstname" => 'required',
