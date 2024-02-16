@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,12 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/get-user', [UserController::class, 'getUser']);
-    Route::post('/update-profile', [UserController::class, 'updateProfile']);
+    Route::group(['middleware' => 'advertiser'],function(){
+        Route::get('/get-advertiser/{id?}', [UserController::class, 'getAdvertiser']);
+        Route::post('/update-profile', [UserController::class, 'updateProfile']);
+    });
+    
+    Route::group(['middleware' => 'admin'],function(){
+        Route::get('/get-super-admin/{id?}', [AdminController::class, 'getSuperAdmin']);
+    });
 });

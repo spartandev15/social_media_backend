@@ -4,16 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
 
 use App\Models\User;
 
-class UserController extends Controller
+class AdminController extends Controller
 {
-
-    public function getAdvertiser($id = null){
-        $advertiserId = $id ? $id : Auth::user()->id;
+    public function getSuperAdmin($id = null){
+        $superAdminId = $id ? $id : Auth::user()->id;
         $currentUser = User::select(
                         'id',
                         'firstname',
@@ -23,16 +20,9 @@ class UserController extends Controller
                         'phone',
                         'age',
                         'gender',
-                        'ethnicity',
-                        'height',
-                        'breast_size',
-                        'eye_color',
-                        'hair_color',
-                        'body_type',
                         'profile_photo',
                         'role',
-                        'plan',
-                    )->where('id', $advertiserId)
+                    )->where('id', $superAdminId)
                                 ->first();
         if($currentUser){
             return response()->json([
