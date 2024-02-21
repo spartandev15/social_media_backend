@@ -22,6 +22,7 @@ class AdminController extends Controller
                         'gender',
                         'profile_photo',
                         'role',
+                        'created_at',
                     )->where('id', $superAdminId)
                                 ->first();
         if($currentUser){

@@ -171,7 +171,6 @@ class AuthController extends Controller
                 'status' => true,
                 'user' => $user->only(['id', 'username', 'firstname', 'lastname', 'email', 'phone', 'age', 'gender', 'role', 'plan']),
                 'token' => $token,
-                'role' => "user",
             ], 200);
         }else{
             return response()->json([

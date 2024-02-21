@@ -33,7 +33,7 @@ Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::group(['middleware' => 'advertiser'],function(){
         Route::get('/get-advertiser/{id?}', [UserController::class, 'getAdvertiser']);
-        Route::post('/update-profile', [UserController::class, 'updateProfile']);
+        Route::patch('/update-advertiser', [UserController::class, 'updateAdvertiser']);
     });
     
     Route::group(['middleware' => 'admin'],function(){

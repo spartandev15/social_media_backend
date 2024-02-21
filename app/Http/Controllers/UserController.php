@@ -32,6 +32,7 @@ class UserController extends Controller
                         'profile_photo',
                         'role',
                         'plan',
+                        'created_at',
                     )->where('id', $advertiserId)
                                 ->first();
         if($currentUser){
@@ -46,4 +47,5 @@ class UserController extends Controller
             ], 404);
         }
     }
+
 }
