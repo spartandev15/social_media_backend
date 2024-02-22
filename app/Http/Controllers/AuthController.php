@@ -194,7 +194,7 @@ class AuthController extends Controller
         $useremail = $request->email;
         if(User::where('email', '=', $useremail)->exists()){
             $uid =  Str::uuid()->toString();
-            $domain =  env('APP_URL');
+            $domain =  env('FRONT_END_URL');
 
             $data = [
                 'link' => $domain.'reset-password?token='.$uid,
@@ -230,7 +230,7 @@ class AuthController extends Controller
     public function resetPassword(Request $request){
 
         $inputValidation = Validator::make($request->all(), [
-            "password" => 'required|confirmed',
+            "password" => 'required|min:6|confirmed',
             "token" => 'required'
         ]);
         if($inputValidation->fails()){
@@ -264,13 +264,13 @@ class AuthController extends Controller
             } else{
                 return response()->json([
                     'status' => false,
-                    'message' => 'Some error occured please ask for reset link again',
+                    'message' => 'Some error occured. Please ask for reset link again',
                 ], 401);
             }
         }catch(\Exception $e){
             return response()->json([
                 'status' => false,
-                'message' => "Some exception occured",
+                'message' => "Some exception occured. Please retry.",
             ], 400);
         }
     }
