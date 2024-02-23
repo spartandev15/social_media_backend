@@ -72,4 +72,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function advertiserPhotos()
+    {
+        return $this->hasMany(AdvertiserPhoto::class, 'advertiser_id');
+    }
+
+    public function advertiserVideos()
+    {
+        return $this->hasMany(AdvertiserVideo::class, 'advertiser_id');
+    }
 }

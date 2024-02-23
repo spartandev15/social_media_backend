@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('advertiser_photos', function (Blueprint $table) {
+        Schema::create('advertiser_videos', function (Blueprint $table) {
             $table->id();
             $table->foreignUlid('advertiser_id');
-            $table->string('image')->nullable();
+            $table->string('video')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('advertiser_photos');
+        Schema::dropIfExists('advertiser_videos');
     }
 };

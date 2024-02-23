@@ -20,7 +20,7 @@ class AdminController extends Controller
                         'phone',
                         'age',
                         'gender',
-                        'profile_photo',
+                        DB::raw('CONCAT("' . env("APP_URL") . '", profile_photo) AS profile_photo'),
                         'role',
                         'created_at',
                     )->where('id', $superAdminId)
