@@ -35,6 +35,12 @@ class UserController extends Controller
             'users.hair_color',
             'users.body_type',
             DB::raw('CONCAT("' . env("APP_URL") . '", users.profile_photo) AS profile_photo'),
+            DB::raw('CONCAT("' . env("APP_URL") . '", users.cover_photo) AS cover_photo'),
+            'users.street_address',
+            'users.city',
+            'users.state',
+            'users.country',
+            'users.zip',
             'users.role',
             'users.plan',
             'users.created_at',
@@ -147,6 +153,12 @@ class UserController extends Controller
                 'users.hair_color',
                 'users.body_type',
                 DB::raw('CONCAT("' . env("APP_URL") . '", users.profile_photo) AS profile_photo'),
+                DB::raw('CONCAT("' . env("APP_URL") . '", users.cover_photo) AS cover_photo'),
+                'users.street_address',
+                'users.city',
+                'users.state',
+                'users.country',
+                'users.zip',
                 'users.role',
                 'users.plan',
                 'users.created_at',
@@ -364,5 +376,55 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Some error occured',
         ], 401);
+    }
+
+    public function updateCoverPhoto(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            'cover_photo' => $request->cover_photo ? 'file|mimes:jpg,jpeg,png|max:2048' : '',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid Image',
+                'error' => $inputValidation->errors()->first('cover_photo'),
+            ], 422);
+        }
+        $user = User::find(Auth::user()->id);
+        try{
+            if($request->hasFile('cover_photo')) {
+                $randomNumber = random_int(1000, 9999);
+                $file = $request->cover_photo;
+                $date = date('YmdHis');
+                $filename = "COVER_IMG_" . $randomNumber . "_" . $date;
+                $extension = strtolower($file->getClientOriginalExtension());
+                $imageName = $filename . '.' . $extension;
+                $directory = 'uploads/coverImages/';
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0777, true);
+                }
+                $imageUrl = $directory . $imageName;
+                $file->move($directory, $imageName);
+                $image = $imageUrl;
+                if($user->cover_photo != "" && file_exists($user->cover_photo)) {
+                    unlink($user->cover_photo);
+                }
+
+                $userUpdated = $user->update([
+                    "cover_photo" => $image,
+                ]);
+                if( $userUpdated ){
+        
+                    return response()->json([
+                        'status' => true,
+                        'message' => "Cover Photo updated",
+                    ], 200);
+                }
+            }
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => 'Some error occured',
+            ], 401);
+        }
+            
     }
 }

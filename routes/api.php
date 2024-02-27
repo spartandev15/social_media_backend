@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdvertisementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-images', [UserController::class, 'updateImages']);
         Route::post('/update-videos', [UserController::class, 'updateVideos']);
         Route::post('/update-my-account', [UserController::class, 'updateMyAccount']);
+        Route::post('/update-cover-photo', [UserController::class, 'updateCoverPhoto']);
+        Route::post('/create-advertisement', [AdvertisementController::class, 'createAdvertisement']);
+        Route::get('/get-advertisements', [AdvertisementController::class, 'getAdvertisement']);
     });
     
     Route::group(['middleware' => 'admin'],function(){

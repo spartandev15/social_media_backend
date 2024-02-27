@@ -39,6 +39,7 @@ class User extends Authenticatable
         'hair_color',
         'body_type',
         'profile_photo',
+        'cover_photo',
         'street_address',
         'city',
         'state',
