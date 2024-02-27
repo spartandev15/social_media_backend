@@ -40,6 +40,7 @@ class UserController extends Controller
             'users.created_at',
         )
         ->with('advertiserPhotos:id,image')
+        ->with('advertiserVideos:id,video')
         ->where('users.id', $advertiserId)
         ->first();
         
@@ -50,12 +51,22 @@ class UserController extends Controller
                 'image' => env("APP_URL") . $photo->image,
             ];
         })->toArray();
+
+        // Transform advertiser videos into an array of arrays
+        $videos = Auth::user()->advertiserVideos->map(function ($video) {
+            return [
+                'id' => $video->id,
+                'video' => env("APP_URL") . $video->video,
+            ];
+        })->toArray();
         
         // Merge the images into the $currentUser object
         $currentUser->images = $images;
+        $currentUser->videos = $videos;
         
         // Remove the advertiserPhotos property as it's no longer needed
         unset($currentUser->advertiserPhotos);
+        unset($currentUser->advertiserVideos);
         
         if($currentUser){
             return response()->json([
@@ -141,6 +152,7 @@ class UserController extends Controller
                 'users.created_at',
             )
             ->with('advertiserPhotos:id,image')
+            ->with('advertiserVideos:id,video')
             ->find($user->id);
             $images = Auth::user()->advertiserPhotos->map(function ($photo) {
                 return [
@@ -148,7 +160,17 @@ class UserController extends Controller
                     'image' => env("APP_URL") . $photo->image,
                 ];
             })->toArray();
+            // Transform advertiser videos into an array of arrays
+            $videos = Auth::user()->advertiserVideos->map(function ($video) {
+                return [
+                    'id' => $video->id,
+                    'video' => env("APP_URL") . $video->video,
+                ];
+            })->toArray();
             $updatedUser->images = $images;
+            $updatedUser->videos = $videos;
+
+            unset($updatedUser->advertiserVideos);
             unset($updatedUser->advertiserPhotos);
 
             return response()->json([
@@ -233,5 +255,114 @@ class UserController extends Controller
         // return response()->json([
         //     'message' => 'Some error occured',
         // ], 401);
+    }
+
+    public function updateVideos(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            'videos' => 'array',
+            'videos.*' => 'file|mimes:mp4',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Please select a file of type jpg, jpeg or png. Max size 2MB',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $advVideoIds = Auth::user()->advertiserVideos->pluck('id')->toArray();
+        $oldvideos = $request->oldVideoIds != "" ? explode(",", $request->oldVideoIds) : [];
+        $oldVideosCount = count($oldvideos);
+
+        $advVideos = AdvertiserVideo::where('advertiser_id', Auth::user()->id)->get();
+        $totalvideosCount = count($advVideos);
+        if($oldVideosCount != $totalvideosCount){
+            $oldvideos = array_map('intval', $oldvideos);
+            $idsToRemove = array_diff($advVideoIds, $oldvideos);
+            $idsToRemove = array_values($idsToRemove);
+            foreach ($idsToRemove as $idToRemove) {
+                // Find the AdvertiserVideo record with the ID to remove
+                $videoToRemove = AdvertiserVideo::find($idToRemove);
+                if ($videoToRemove) {
+                    // Delete the video file if it exists
+                    if (file_exists($videoToRemove->video)) {
+                        unlink($videoToRemove->video);
+                    }
+                    $videoToRemove->delete();
+                }
+            }
+        }
+        if($request->hasFile('videos')){
+            // if(($oldVideosCount + count($request->file('videos'))) > 4){
+            //     return response()->json([
+            //         'message' => 'You have already 4 videos uploaded. Please first remove videos.',
+            //     ], 422);
+            // }
+            foreach($request->file('videos') as $video){
+                try{
+                    $randomNumber = random_int(1000, 9999);
+                    $file = $video;
+                    $date = date('YmdHis');
+                    $filename = "VID_" . $randomNumber . "_" . $date;
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $videoName = $filename . '.' . $extension;
+                    $directory = 'uploads/advertiserVideos/';
+                    if (!file_exists($directory)) {
+                        mkdir($directory, 0777, true);
+                    }
+                    $videoUrl = $directory . $videoName;
+                    $file->move($directory, $videoName);
+                    $video = $videoUrl;
+                    AdvertiserVideo::create([
+                        "advertiser_id" => Auth::user()->id,
+                        "video" => $video,
+                    ]);
+                }catch(\Exception $e){
+                }
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "Videos successfully updated",
+        ], 200);
+        
+        // return response()->json([
+        //     'message' => 'Some error occured',
+        // ], 401);
+    }
+
+    public function updateMyAccount(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            // 'ethnicity' => 'required',
+            // 'height' => 'required',
+            // 'breast_size' => 'required',
+            // 'eye_color' => 'required',
+            // 'hair_color' => 'required',
+            'phone' => (Auth::user()->phone != $request->phone) ? 'required|unique:users|digits:10' : '',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $user = User::find(Auth::user()->id);
+
+        $userUpdated = $user->update([
+            "street_address" => $request->street_address,
+            "city" => $request->city,
+            "state" => $request->state,
+            "country" => $request->country,
+            "zip" => $request->zip,
+            "phone" => $request->phone,
+        ]);
+        if( $userUpdated ){
+            return response()->json([
+                'status' => true,
+                'message' => "Accout successfully updated",
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Some error occured',
+        ], 401);
     }
 }
