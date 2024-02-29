@@ -41,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-cover-photo', [UserController::class, 'updateCoverPhoto']);
         Route::post('/create-advertisement', [AdvertisementController::class, 'createAdvertisement']);
         Route::get('/get-advertisements', [AdvertisementController::class, 'getAdvertisement']);
+        Route::delete('/delete-advertisement/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
+        Route::post('/update-advertisement/{id}', [AdvertisementController::class, 'updateAdvertisement']);
+        Route::get('/renew-advertisement/{id}', [AdvertisementController::class, 'renewAdvertisement']);
     });
     
     Route::group(['middleware' => 'admin'],function(){

@@ -58,4 +58,81 @@ class AdvertisementController extends Controller
             'message' => 'Some error occured',
         ], 401);
     }
+
+    public function updateAdvertisement($id, Request $request){
+
+        $inputValidation = Validator::make($request->all(), [
+            'ad_name' => 'required',
+            'publish_date' => 'required',
+            'location' => 'required',
+            'mile_radius' => 'required',
+            'state' => 'required',
+            'country' => 'required',
+            'duration_price' => 'required|array',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+
+        $adUpdated = Advertisement::where('id', $id)->update([
+            "ad_name" => $request->ad_name,
+            "publish_date" => $request->publish_date,
+            "location" => $request->location,
+            "mile_radius" => $request->mile_radius,
+            "state" => $request->state,
+            "country" => $request->country,
+            "duration_price" => $request->duration_price,
+        ]);
+        if( $adUpdated ){
+            
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Updated Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function deleteAdvertisement($id){
+        
+        $adDeleted = Advertisement::where('id', $id)->delete();
+        if( $adDeleted ){
+            
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Deleted Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function renewAdvertisement($id){
+        
+        $adRenewed = Advertisement::where('id', $id)->update([
+            'expired' => 0,
+            'expired_at' => null,
+            'renew' => 1,
+            'renew_at' => now(),
+        ]);
+        if( $adRenewed ){
+            
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Renewed Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
 }
