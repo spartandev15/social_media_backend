@@ -44,6 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/delete-advertisement/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
         Route::post('/update-advertisement/{id}', [AdvertisementController::class, 'updateAdvertisement']);
         Route::get('/renew-advertisement/{id}', [AdvertisementController::class, 'renewAdvertisement']);
+        Route::post('/create-availability', [AdvertisementController::class, 'createAvailability']);
+        Route::get('/get-availabilities', [AdvertisementController::class, 'getAvailabilities']);
+        Route::post('/update-availability/{id}', [AdvertisementController::class, 'updateAvailability']);
     });
     
     Route::group(['middleware' => 'admin'],function(){

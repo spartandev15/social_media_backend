@@ -32,4 +32,9 @@ class Advertisement extends Model
         'duration_price' => 'array',
     ];
     protected $dates = ['expired_at', 'renew_at'];
+
+    public function availabilities()
+    {
+        return $this->hasMany(Availability::class, 'ad_id');
+    }
 }

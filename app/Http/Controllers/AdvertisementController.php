@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 use App\Models\Advertisement;
+use App\Models\Availability;
 
 class AdvertisementController extends Controller
 {
@@ -128,6 +129,73 @@ class AdvertisementController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Advertisement Renewed Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function createAvailability(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            'ad_id' => 'required',
+            'dates' => 'required|array',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $createdAvailibility = Availability::create([
+            'advertiser_id' => Auth::user()->id,
+            'ad_id' => $request->ad_id,
+            'dates' => $request->dates,
+        ]);
+        if( $createdAvailibility ){
+            return response()->json([
+                'status' => true,
+                'message' => "Availability Created Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function getAvailabilities(Request $request){
+
+        $avails = Availability::select('advertisements.ad_name', 'availabilities.*')
+                    ->leftJoin('advertisements', 'availabilities.ad_id', '=', 'advertisements.id')
+                    ->where('advertisements.advertiser_id', Auth::user()->id)
+                    ->get();
+
+        return response()->json([
+            'status' => true,
+            'availabilities' => $avails,
+        ], 200);
+    }
+
+    public function updateAvailability($id, Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            'dates' => 'required|array',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        $updatedAvail = Availability::where('id', $id)->update([
+            'dates' => $request->dates,
+        ]);
+
+        if( $updatedAvail ){
+            return response()->json([
+                'status' => true,
+                'message' => "Availability Updated Successfully",
             ], 200);
         }
         return response()->json([
