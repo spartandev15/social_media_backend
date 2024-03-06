@@ -427,4 +427,69 @@ class UserController extends Controller
         }
             
     }
+
+    public function updatePassword(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "old_password" => 'required',
+            "new_password" => 'required|confirmed'
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+        if($request->old_password == $request->new_password){
+            return response()->json([ 'status' => false, 'message' => "Old and New passwords are same. Please choose different password", ], 422);
+        }
+        try{
+            $user = User::find( Auth::user()->id );
+            if(Hash::check($request->old_password, $user->password)){
+                $user->update([
+                    'password' => Hash::make($request->new_password)
+                ]);
+                // Get the current token being used for authentication
+                $currentToken = Auth::user()->currentAccessToken();
+                // Remove all tokens except the current one
+                $user->tokens->each(function ($token) use ($currentToken) {
+                    if ($token->id !== $currentToken->id) {
+                        $token->delete();
+                    }
+                });
+                return response()->json([
+                    'status' => true,
+                    'message' => "Password updated successfully",
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Old Password does not match",
+                ], 400);
+            }
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => "Some exception occured",
+            ], 400);
+        }
+    }
+
+
+    public function deleteAdvertiser(){
+        $user = User::find(Auth::user()->id);
+        if($user){
+            try{
+                // delete all the tokens
+                $user->tokens()->delete();
+                // Now delete the user
+                $user->delete();
+                return response()->json([ 'status' => true, 'message' => "Acoount Deleted Successfully", ], 200);
+            }catch(\Exception $e){
+                return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+            }
+        }else{
+            return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
 }

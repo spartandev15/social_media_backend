@@ -203,4 +203,18 @@ class AdvertisementController extends Controller
             'message' => 'Some error occured',
         ], 401);
     }
+
+    public function deleteAvailability($id){
+        $availDeleted = Availability::where('id', $id)->delete();
+        if( $availDeleted ){
+            return response()->json([
+                'status' => true,
+                'message' => "Availability Deleted Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
 }

@@ -62,7 +62,7 @@ class AuthController extends Controller
 
     public function register(Request $request){
         $inputValidation = Validator::make($request->all(), [
-            "username" => 'required',
+            "username" => 'required|unique:users,username',
             "firstname" => 'required',
             "lastname" => 'required',
             "email" => 'required|email:filter|unique:users,email',
@@ -178,6 +178,16 @@ class AuthController extends Controller
                 'messsage' => "Email and password do not match.",
             ], 401); 
         }
+    }
+
+    public function logout(){
+        $user = Auth::user();
+        $token = $user->currentAccessToken();
+        $token->delete();
+        return response()->json([
+            'status' => true,
+            'message' => "Logout successfully",
+        ], 200);
     }
 
     public function forgotpassword(Request $request){

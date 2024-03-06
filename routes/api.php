@@ -32,6 +32,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::group(['middleware' => 'advertiser'],function(){
         Route::get('/get-advertiser/{id?}', [UserController::class, 'getAdvertiser']);
         Route::post('/update-advertiser', [UserController::class, 'updateAdvertiser']);
@@ -47,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/create-availability', [AdvertisementController::class, 'createAvailability']);
         Route::get('/get-availabilities', [AdvertisementController::class, 'getAvailabilities']);
         Route::post('/update-availability/{id}', [AdvertisementController::class, 'updateAvailability']);
+        Route::delete('/delete-availability/{id}', [AdvertisementController::class, 'deleteAvailability']);
+        Route::post('/update-password', [UserController::class, 'updatePassword']);
+        Route::delete('/delete-advertiser', [UserController::class, 'deleteAdvertiser']);
     });
     
     Route::group(['middleware' => 'admin'],function(){
