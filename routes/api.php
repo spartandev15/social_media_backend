@@ -55,5 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::group(['middleware' => 'admin'],function(){
         Route::get('/get-super-admin/{id?}', [AdminController::class, 'getSuperAdmin']);
+        Route::post('/update-profile-photo-admin', [AdminController::class, 'updateProfilePhotoAdmin']);
+        Route::post('/update-account-admin', [AdminController::class, 'updateAccountAdmin']);
+        Route::post('/update-password-admin', [AdminController::class, 'updatePasswordAdmin']);
     });
 });
