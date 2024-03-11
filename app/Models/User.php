@@ -74,6 +74,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function advertisements()
+    {
+        return $this->hasMany(AdvertiserPhoto::class, 'advertiser_id');
+    }
+
     public function advertiserPhotos()
     {
         return $this->hasMany(AdvertiserPhoto::class, 'advertiser_id');

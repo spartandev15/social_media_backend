@@ -58,5 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-profile-photo-admin', [AdminController::class, 'updateProfilePhotoAdmin']);
         Route::post('/update-account-admin', [AdminController::class, 'updateAccountAdmin']);
         Route::post('/update-password-admin', [AdminController::class, 'updatePasswordAdmin']);
+        Route::post('/create-user', [AdminController::class, 'createUser']);
+        Route::get('/get-all-advertisers', [AdminController::class, 'getAllAdvertisers']);
+        Route::get('/get-dashboard-totals', [AdminController::class, 'getDashboardTotals']);
+        Route::get('/get-managers-supports', [AdminController::class, 'getManagersAndSupports']);
     });
 });

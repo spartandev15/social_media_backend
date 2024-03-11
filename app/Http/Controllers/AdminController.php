@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
 use App\Models\User;
+use App\Models\Advertisement;
 
 class AdminController extends Controller
 {
@@ -168,5 +169,131 @@ class AdminController extends Controller
                 'message' => "Some exception occured",
             ], 400);
         }
+    }
+
+    public function createUser(Request $request){
+        $inputValidation = Validator::make($request->all(), [
+            "username" => 'required|unique:users,username',
+            "firstname" => 'required',
+            "lastname" => 'required',
+            "email" => 'required|email:filter|unique:users,email',
+            "password" => 'required|min:6|confirmed',
+            'phone' => 'required|regex:/^[0-9]{10}$/|unique:users,phone',
+            "age" => 'required',
+            "gender" => 'required',
+            "role" => 'required',
+        ]);
+        if($inputValidation->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid data entered',
+                'errors' => $inputValidation->errors(),
+            ], 422);
+        }
+
+        $user = User::create([
+            "firstname" => $request->firstname,
+            "lastname" => $request->lastname,
+            "username" => $request->username,
+            "email" => $request->email,
+            "password" => Hash::make($request->password),
+            "phone" => $request->phone,
+            "age" => (int) $request->age,
+            "gender" => $request->gender,
+            "role" => $request->role,
+        ]);
+        if( $user ){
+            return response()->json([
+                'status' => true,
+                'message' => "User successfully created",
+            ], 200);
+        }else{
+            return response()->json([
+                'message' => 'Some error occured',
+            ], 401);
+        }
+        
+    }
+
+    public function getAllAdvertisers(){
+
+        $advertisers = User::select(
+                'id',
+                'firstname',
+                'lastname',
+                'username',
+                'email',
+                'phone',
+                'age',
+                'gender',
+                'ethnicity',
+                'height',
+                'breast_size',
+                'eye_color',
+                'hair_color',
+                'body_type',
+                DB::raw('CONCAT("' . env("APP_URL") . '", profile_photo) AS profile_photo'),
+                'street_address',
+                'city',
+                'state',
+                'country',
+                'zip',
+                'role',
+                'plan',
+                'created_at',
+                'updated_at',
+                )
+            ->where('role', 'Advertiser')->paginate(10);
+        
+            return response()->json([
+                'status' => true,
+                'advertisers' => $advertisers,
+            ], 200);
+        
+    }
+
+    public function getManagersAndSupports(){
+
+        $users = User::select(
+                    'id',
+                    'firstname',
+                    'lastname',
+                    'username',
+                    'email',
+                    'phone',
+                    'age',
+                    'gender',
+                    DB::raw('CONCAT("' . env("APP_URL") . '", profile_photo) AS profile_photo'),
+                    'role',
+                    'created_at',
+                    'updated_at',
+                    )
+                ->whereIn('role', ['Manager', 'Support'])->paginate(10);
+        
+            return response()->json([
+                'status' => true,
+                'users' => $users,
+            ], 200);
+        
+    }
+
+    public function getDashboardTotals(){
+
+        $totalAdvertiser = User::where('role', 'Advertiser')
+                            ->count();
+        $activeAdvertisers = User::where('role', 'Advertiser')
+                        ->whereHas('advertisements') // Ensure users have at least one record in the advertisements table
+                        ->count();
+        $totalAds = Advertisement::where('expired', 0)
+                    ->where('expired_at', null)
+                    ->count();
+        return response()->json([
+            'status' => true,
+            'totalAdvertiser' => $totalAdvertiser,
+            'activeAdvertisers' => $activeAdvertisers,
+            'totalAds' => $totalAds,
+            'totalRevenue' => 0,
+        ], 200);
+        
     }
 }
