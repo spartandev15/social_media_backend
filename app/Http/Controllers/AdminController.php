@@ -13,7 +13,7 @@ use App\Models\Advertisement;
 
 class AdminController extends Controller
 {
-    public function getSuperAdmin($id = null){
+    public function getUser($id = null){
         $superAdminId = $id ? $id : Auth::user()->id;
         $currentUser = User::select(
                         'id',
@@ -27,6 +27,7 @@ class AdminController extends Controller
                         DB::raw('CONCAT("' . env("APP_URL") . '", profile_photo) AS profile_photo'),
                         'role',
                         'created_at',
+                        'updated_at',
                     )->where('id', $superAdminId)
                                 ->first();
         if($currentUser){

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Models\Advertisement;
 use App\Models\Availability;
+use Carbon\Carbon;
 
 class AdvertisementController extends Controller
 {
@@ -16,6 +17,14 @@ class AdvertisementController extends Controller
         return response()->json([
             'status' => true,
             'allAds' => $Ads,
+        ], 200);
+    }
+
+    public function getAllAdvertisements(Request $request){
+        $allAds = Advertisement::paginate(10);
+        return response()->json([
+            'status' => true,
+            'allAds' => $allAds,
         ], 200);
     }
 
@@ -135,6 +144,22 @@ class AdvertisementController extends Controller
             'status' => false,
             'message' => 'Some error occured',
         ], 401);
+    }
+
+    public function getLatestAdvertisements(Request $request) {
+        // Get the current date
+        $currentDate = Carbon::now();
+    
+        // Calculate the date two weeks ago
+        $twoWeeksAgo = $currentDate->subWeeks(2);
+    
+        // Retrieve advertisements within the last two weeks
+        $latestAds = Advertisement::where('created_at', '>=', $twoWeeksAgo)->orderBy('created_at', 'desc')->paginate(10);
+    
+        return response()->json([
+            'status' => true,
+            'latestAds' => $latestAds,
+        ], 200);
     }
 
     public function createAvailability(Request $request){
