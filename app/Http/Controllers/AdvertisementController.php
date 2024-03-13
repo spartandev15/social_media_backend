@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Advertisement;
 use App\Models\Availability;
+use App\Models\AdvertiserPhoto;
+use App\Models\AdvertiserVideo;
 use Carbon\Carbon;
 
 class AdvertisementController extends Controller
@@ -136,6 +138,21 @@ class AdvertisementController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "Advertisement Soft Deleted Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function restoreAdvertisement($id){
+        
+        $adRestored = Advertisement::withTrashed()->find($id)->restore();
+        if( $adRestored ){
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Restored Successfully",
             ], 200);
         }
         return response()->json([
@@ -299,6 +316,46 @@ class AdvertisementController extends Controller
                 'status' => true,
                 'message' => "Availability Deleted Successfully",
             ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function deleteImageById($id){
+        $photo = AdvertiserPhoto::find($id);
+        if( $photo ){
+            if(isset($photo->image) && !empty($photo->image)){
+                if($photo->image != "" && file_exists($photo->image)) {
+                    unlink($photo->image);
+                }
+                $photo->delete();
+                return response()->json([
+                    'status' => true,
+                    'message' => "Image Deleted Successfully",
+                ], 200);
+            }
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function deleteVideoById($id){
+        $video = AdvertiserVideo::find($id);
+        if( $video ){
+            if(isset($video->video) && !empty($video->video)){
+                if($video->video != "" && file_exists($video->video)) {
+                    unlink($video->video);
+                }
+                $video->delete();
+                return response()->json([
+                    'status' => true,
+                    'message' => "Video Deleted Successfully",
+                ], 200);
+            }
         }
         return response()->json([
             'status' => false,

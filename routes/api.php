@@ -73,7 +73,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get-latest-advertisements', [AdvertisementController::class, 'getLatestAdvertisements']);
         Route::get('/pause-advertisement/{id}', [AdvertisementController::class, 'pauseAdvertisement']);
         Route::delete('/trash-advertisement/{id}', [AdvertisementController::class, 'trashAdvertisement']);
+        Route::post('/restore-advertisement/{id}', [AdvertisementController::class, 'restoreAdvertisement']);
         Route::get('/get-paused-advertisements', [AdvertisementController::class, 'getPausedAdvertisements']);
         Route::get('/get-trashed-advertisements', [AdvertisementController::class, 'getTrashedAdvertisements']);
+        Route::delete('/delete-image-by-id/{id}', [AdvertisementController::class, 'deleteImageById']);
+        Route::delete('/delete-video-by-id/{id}', [AdvertisementController::class, 'deleteVideoById']);
     });
 });
