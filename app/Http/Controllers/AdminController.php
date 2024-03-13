@@ -253,9 +253,10 @@ class AdminController extends Controller
         
     }
 
-    public function getManagersAndSupports(){
-
-        $users = User::select(
+    public function getManagersAndSupports(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $role = $request->input('role', '');
+        $query = User::select(
                     'id',
                     'firstname',
                     'lastname',
@@ -268,13 +269,25 @@ class AdminController extends Controller
                     'role',
                     'created_at',
                     'updated_at',
-                    )
-                ->whereIn('role', ['Manager', 'Support'])->paginate(10);
-        
-            return response()->json([
-                'status' => true,
-                'users' => $users,
-            ], 200);
+        )->whereIn('role', ['Manager', 'Support']);
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('username', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+        if (!empty($role)) {
+            $query->where('role', '=', $role);
+        }
+        $users = $query->paginate(10);
+        return response()->json([
+            'status' => true,
+            'users' => $users,
+        ], 200);
         
     }
 

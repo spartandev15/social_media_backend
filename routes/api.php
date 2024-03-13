@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-my-account', [UserController::class, 'updateMyAccount']);
         Route::post('/update-cover-photo', [UserController::class, 'updateCoverPhoto']);
         Route::post('/create-advertisement', [AdvertisementController::class, 'createAdvertisement']);
-        Route::get('/get-advertisements', [AdvertisementController::class, 'getAdvertisement']);
+        Route::get('/get-advertisements/{id?}', [AdvertisementController::class, 'getAdvertisement']);
         Route::delete('/delete-advertisement/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
         Route::post('/update-advertisement/{id}', [AdvertisementController::class, 'updateAdvertisement']);
         Route::get('/renew-advertisement/{id}', [AdvertisementController::class, 'renewAdvertisement']);
@@ -59,6 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('role:Super_Admin')->group(function () {
+        Route::get('/get-advertiser-by-admin/{id?}', [UserController::class, 'getAdvertiser']);
+        Route::get('/get-advertisements-by-admin/{id?}', [AdvertisementController::class, 'getAdvertisement']);
+
         Route::post('/update-profile-photo-admin', [AdminController::class, 'updateProfilePhotoAdmin']);
         Route::post('/update-account-admin', [AdminController::class, 'updateAccountAdmin']);
         Route::post('/update-password-admin', [AdminController::class, 'updatePasswordAdmin']);
@@ -68,5 +71,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get-managers-supports', [AdminController::class, 'getManagersAndSupports']);
         Route::get('/get-all-advertisements', [AdvertisementController::class, 'getAllAdvertisements']);
         Route::get('/get-latest-advertisements', [AdvertisementController::class, 'getLatestAdvertisements']);
+        Route::get('/pause-advertisement/{id}', [AdvertisementController::class, 'pauseAdvertisement']);
+        Route::delete('/trash-advertisement/{id}', [AdvertisementController::class, 'trashAdvertisement']);
+        Route::get('/get-paused-advertisements', [AdvertisementController::class, 'getPausedAdvertisements']);
+        Route::get('/get-trashed-advertisements', [AdvertisementController::class, 'getTrashedAdvertisements']);
     });
 });

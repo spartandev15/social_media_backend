@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Advertisement;
 use App\Models\Availability;
@@ -12,8 +13,9 @@ use Carbon\Carbon;
 
 class AdvertisementController extends Controller
 {
-    public function getAdvertisement(Request $request){
-        $Ads = Advertisement::where('advertiser_id', Auth::user()->id)->get();
+    public function getAdvertisement($id = null){
+        $advertiserId = $id ? $id : Auth::user()->id;
+        $Ads = Advertisement::where('advertiser_id', $advertiserId)->get();
         return response()->json([
             'status' => true,
             'allAds' => $Ads,
@@ -21,7 +23,9 @@ class AdvertisementController extends Controller
     }
 
     public function getAllAdvertisements(Request $request){
-        $allAds = Advertisement::paginate(10);
+        $allAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+                ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
+                ->paginate(10);
         return response()->json([
             'status' => true,
             'allAds' => $allAds,
@@ -111,7 +115,7 @@ class AdvertisementController extends Controller
 
     public function deleteAdvertisement($id){
         
-        $adDeleted = Advertisement::where('id', $id)->delete();
+        $adDeleted = Advertisement::where('id', $id)->forceDelete();
         if( $adDeleted ){
             
             return response()->json([
@@ -123,6 +127,35 @@ class AdvertisementController extends Controller
             'status' => false,
             'message' => 'Some error occured',
         ], 401);
+    }
+
+    public function trashAdvertisement($id){
+        
+        $adTrashed = Advertisement::where('id', $id)->delete();
+        if( $adTrashed ){
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Soft Deleted Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
+    }
+
+    public function getTrashedAdvertisements(Request $request) {
+
+        $trashedAds = Advertisement::onlyTrashed()
+            ->leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+            ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
+            ->orderBy('advertisements.deleted_at', 'desc')
+            ->paginate(10);
+    
+        return response()->json([
+            'status' => true,
+            'trashedAds' => $trashedAds,
+        ], 200);
     }
 
     public function renewAdvertisement($id){
@@ -152,13 +185,43 @@ class AdvertisementController extends Controller
     
         // Calculate the date two weeks ago
         $twoWeeksAgo = $currentDate->subWeeks(2);
-    
+
         // Retrieve advertisements within the last two weeks
-        $latestAds = Advertisement::where('created_at', '>=', $twoWeeksAgo)->orderBy('created_at', 'desc')->paginate(10);
+        $latestAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+                ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
+                ->where('advertisements.created_at', '>=', $twoWeeksAgo)->orderBy('advertisements.created_at', 'desc')->paginate(10);
     
         return response()->json([
             'status' => true,
             'latestAds' => $latestAds,
+        ], 200);
+    }
+
+    public function pauseAdvertisement($id) {
+
+        $pausedAds = Advertisement::where('id', $id)
+            ->update([
+                "paused" => 1,
+                "paused_at" => now(),
+            ]);
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Advertisement Paused Successfully',
+        ], 200);
+    }
+
+    public function getPausedAdvertisements(Request $request) {
+
+        $pausedAds = Advertisement::where('paused', '=', 1)
+            ->orderBy('paused_at', 'desc')
+            ->leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+            ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*') // Select desired columns from both tables
+            ->paginate(10);
+    
+        return response()->json([
+            'status' => true,
+            'pausedAds' => $pausedAds,
         ], 200);
     }
 

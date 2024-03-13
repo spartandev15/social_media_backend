@@ -51,20 +51,26 @@ class UserController extends Controller
         ->first();
         
         // Transform advertiser photos into an array of arrays
-        $images = Auth::user()->advertiserPhotos->map(function ($photo) {
-            return [
-                'id' => $photo->id,
-                'image' => env("APP_URL") . $photo->image,
-            ];
-        })->toArray();
+        $images = AdvertiserPhoto::where('advertiser_id', $advertiserId)
+            ->get(['id', 'image'])
+            ->map(function ($photo) {
+                return [
+                    'id' => $photo->id,
+                    'image' => env("APP_URL") . $photo->image,
+                ];
+            })
+            ->toArray();
 
         // Transform advertiser videos into an array of arrays
-        $videos = Auth::user()->advertiserVideos->map(function ($video) {
-            return [
-                'id' => $video->id,
-                'video' => env("APP_URL") . $video->video,
-            ];
-        })->toArray();
+        $videos = AdvertiserVideo::where('advertiser_id', $advertiserId)
+            ->get(['id', 'video'])
+            ->map(function ($video) {
+                return [
+                    'id' => $video->id,
+                    'video' => env("APP_URL") . $video->video,
+                ];
+            })
+            ->toArray();
         
         // Merge the images into the $currentUser object
         $currentUser->images = $images;
@@ -166,19 +172,27 @@ class UserController extends Controller
             ->with('advertiserPhotos:id,image')
             ->with('advertiserVideos:id,video')
             ->find($user->id);
-            $images = Auth::user()->advertiserPhotos->map(function ($photo) {
-                return [
-                    'id' => $photo->id,
-                    'image' => env("APP_URL") . $photo->image,
-                ];
-            })->toArray();
+            // Transform advertiser photos into an array of arrays
+            $images = AdvertiserPhoto::where('advertiser_id', $user->id)
+                ->get(['id', 'image'])
+                ->map(function ($photo) {
+                    return [
+                        'id' => $photo->id,
+                        'image' => env("APP_URL") . $photo->image,
+                    ];
+                })
+                ->toArray();
+
             // Transform advertiser videos into an array of arrays
-            $videos = Auth::user()->advertiserVideos->map(function ($video) {
-                return [
-                    'id' => $video->id,
-                    'video' => env("APP_URL") . $video->video,
-                ];
-            })->toArray();
+            $videos = AdvertiserVideo::where('advertiser_id', $user->id)
+                ->get(['id', 'video'])
+                ->map(function ($video) {
+                    return [
+                        'id' => $video->id,
+                        'video' => env("APP_URL") . $video->video,
+                    ];
+                })
+                ->toArray();
             $updatedUser->images = $images;
             $updatedUser->videos = $videos;
 
