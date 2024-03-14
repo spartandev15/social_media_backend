@@ -60,7 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:Super_Admin')->group(function () {
         Route::get('/get-advertiser-by-admin/{id?}', [UserController::class, 'getAdvertiser']);
+        Route::get('/get-advertisement-by-id/{id?}', [AdvertisementController::class, 'getAdvertisementById']);
         Route::get('/get-advertisements-by-admin/{id?}', [AdvertisementController::class, 'getAdvertisement']);
+        Route::delete('/delete-advertisement-by-admin/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
+        Route::delete('/delete-advertiser-permanently/{id}', [UserController::class, 'deleteAdvertiserPermanently']);
 
         Route::post('/update-profile-photo-admin', [AdminController::class, 'updateProfilePhotoAdmin']);
         Route::post('/update-account-admin', [AdminController::class, 'updateAccountAdmin']);
@@ -74,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pause-advertisement/{id}', [AdvertisementController::class, 'pauseAdvertisement']);
         Route::delete('/trash-advertisement/{id}', [AdvertisementController::class, 'trashAdvertisement']);
         Route::post('/restore-advertisement/{id}', [AdvertisementController::class, 'restoreAdvertisement']);
+        Route::post('/activate-paused-advertisement/{id}', [AdvertisementController::class, 'activatePausedAdvertisement']);
         Route::get('/get-paused-advertisements', [AdvertisementController::class, 'getPausedAdvertisements']);
         Route::get('/get-trashed-advertisements', [AdvertisementController::class, 'getTrashedAdvertisements']);
         Route::delete('/delete-image-by-id/{id}', [AdvertisementController::class, 'deleteImageById']);

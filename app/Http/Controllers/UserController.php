@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\File;
 use App\Models\User;
 use App\Models\AdvertiserPhoto;
 use App\Models\AdvertiserVideo;
+use App\Models\Availability;
+use App\Models\Advertisement;
 
 class UserController extends Controller
 {
@@ -489,7 +491,6 @@ class UserController extends Controller
         }
     }
 
-
     public function deleteAdvertiser(){
         $user = User::find(Auth::user()->id);
         if($user){
@@ -504,6 +505,51 @@ class UserController extends Controller
             }
         }else{
             return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
+
+    public function deleteAdvertiserPermanently($id){
+        $user = User::find($id);
+        try{
+            if($user){
+                // delete associated Availability
+                Availability::where('advertiser_id', $id)->delete();
+
+                // delete associated photos from directory and record
+                $userAdsPhotos = AdvertiserPhoto::where('advertiser_id', $id)->get();
+                foreach($userAdsPhotos as $photo){
+                    $this->deleteFile($photo->image);
+                }
+                AdvertiserPhoto::where('advertiser_id', $id)->delete();
+
+                // delete associated Videos from directory and record
+                $userAdsVideos = AdvertiserVideo::where('advertiser_id', $id)->get();
+                foreach($userAdsVideos as $video){
+                    $this->deleteFile($video->video);
+                }
+                AdvertiserVideo::where('advertiser_id', $id)->delete();
+
+                $userAds = Advertisement::where('advertiser_id', $id)->forceDelete();
+                // delete profile photo
+                $this->deleteFile($user->profile_photo);
+                // delete all the tokens
+                $user->tokens()->delete();
+                // Now delete the user
+                $user->forceDelete();
+
+                return response()->json([ 'status' => true, 'message' => "Account Deleted Successfully", ], 200);
+            }else{
+                return response()->json([ 'status' => false, 'message' => "No user found", ], 400);
+            }
+        }catch(\Exception $e){
+            dd($e);
+            // return response()->json([ 'status' => false, 'message' => "Some error occured", ], 400);
+        }
+    }
+
+    function deleteFile($filePath){
+        if($filePath != "" && file_exists($filePath)) {
+            unlink($filePath);
         }
     }
 }

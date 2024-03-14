@@ -29,6 +29,7 @@ class Advertisement extends Model
         'renew_at',
         'paused',
         'paused_at',
+        'deleted',
     ];
 
     protected $casts = [

@@ -24,9 +24,18 @@ class AdvertisementController extends Controller
         ], 200);
     }
 
+    public function getAdvertisementById($id){
+        $ad = Advertisement::withTrashed()->where('id', $id)->first();
+        return response()->json([
+            'status' => true,
+            'advertisement' => $ad,
+        ], 200);
+    }
+
     public function getAllAdvertisements(Request $request){
         $allAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
                 ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
+                ->where('advertisements.paused', 0)->where('advertisements.paused_at', null)
                 ->paginate(10);
         return response()->json([
             'status' => true,
@@ -133,23 +142,30 @@ class AdvertisementController extends Controller
 
     public function trashAdvertisement($id){
         
-        $adTrashed = Advertisement::where('id', $id)->delete();
+        $adTrashed = Advertisement::find($id);
         if( $adTrashed ){
+            $adTrashed->deleted = 1;
+            $adTrashed->save();
+            $adTrashed->delete();
             return response()->json([
                 'status' => true,
                 'message' => "Advertisement Soft Deleted Successfully",
             ], 200);
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Advertisement not found',
+            ], 401);
         }
-        return response()->json([
-            'status' => false,
-            'message' => 'Some error occured',
-        ], 401);
     }
 
     public function restoreAdvertisement($id){
         
-        $adRestored = Advertisement::withTrashed()->find($id)->restore();
+        $adRestored = Advertisement::withTrashed()->find($id);
         if( $adRestored ){
+            $adRestored->deleted = 0;
+            $adRestored->save();
+            $adRestored->restore();
             return response()->json([
                 'status' => true,
                 'message' => "Advertisement Restored Successfully",
@@ -206,6 +222,7 @@ class AdvertisementController extends Controller
         // Retrieve advertisements within the last two weeks
         $latestAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
                 ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
+                ->where('advertisements.paused', 0)->where('advertisements.paused_at', null)
                 ->where('advertisements.created_at', '>=', $twoWeeksAgo)->orderBy('advertisements.created_at', 'desc')->paginate(10);
     
         return response()->json([
@@ -240,6 +257,24 @@ class AdvertisementController extends Controller
             'status' => true,
             'pausedAds' => $pausedAds,
         ], 200);
+    }
+
+    public function activatePausedAdvertisement($id){
+        
+        $ad = Advertisement::withTrashed()->find($id);
+        if( $ad ){
+            $ad->paused = 0;
+            $ad->paused_at = null;
+            $ad->save();
+            return response()->json([
+                'status' => true,
+                'message' => "Advertisement Activated Successfully",
+            ], 200);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Some error occured',
+        ], 401);
     }
 
     public function createAvailability(Request $request){
