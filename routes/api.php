@@ -53,17 +53,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/delete-advertiser', [UserController::class, 'deleteAdvertiser']);
     });
     
+    // Route::middleware('role:Super_Admin')->group(function () {
+        // Routes accessible by Super_Admin
+    // });
+    
     Route::middleware('role:Super_Admin,Manager,Support')->group(function () {
         // Routes accessible by Super_Admin, Manager, and Support
         Route::get('/get-user/{id?}', [AdminController::class, 'getUser']);
-    });
-
-    Route::middleware('role:Super_Admin')->group(function () {
         Route::get('/get-advertiser-by-admin/{id?}', [UserController::class, 'getAdvertiser']);
         Route::get('/get-advertisement-by-id/{id?}', [AdvertisementController::class, 'getAdvertisementById']);
         Route::get('/get-advertisements-by-admin/{id?}', [AdvertisementController::class, 'getAdvertisement']);
         Route::delete('/delete-advertisement-by-admin/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
-        Route::delete('/delete-advertiser-permanently/{id}', [UserController::class, 'deleteAdvertiserPermanently']);
+        Route::delete('/delete-user-permanently/{id}', [UserController::class, 'deleteUserPermanently']);
+        Route::get('/get-latest-advertisers', [UserController::class, 'getLatestAdvertisers']);
 
         Route::post('/update-profile-photo-admin', [AdminController::class, 'updateProfilePhotoAdmin']);
         Route::post('/update-account-admin', [AdminController::class, 'updateAccountAdmin']);

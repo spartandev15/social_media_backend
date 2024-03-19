@@ -33,10 +33,19 @@ class AdvertisementController extends Controller
     }
 
     public function getAllAdvertisements(Request $request){
-        $allAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+        $searchValue = $request->input('searchText', '');
+        $query = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
                 ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
-                ->where('advertisements.paused', 0)->where('advertisements.paused_at', null)
-                ->paginate(10);
+                ->where('advertisements.paused', 0)->where('advertisements.paused_at', null);
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('users.firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('users.lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('advertisements.ad_name', 'LIKE', "%$searchValue%");
+            });
+        }
+        $allAds = $query->paginate(10);
         return response()->json([
             'status' => true,
             'allAds' => $allAds,
@@ -178,13 +187,20 @@ class AdvertisementController extends Controller
     }
 
     public function getTrashedAdvertisements(Request $request) {
-
-        $trashedAds = Advertisement::onlyTrashed()
+        $searchValue = $request->input('searchText', '');
+        $query = Advertisement::onlyTrashed()
             ->leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
             ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
-            ->orderBy('advertisements.deleted_at', 'desc')
-            ->paginate(10);
-    
+            ->orderBy('advertisements.deleted_at', 'desc');
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('users.firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('users.lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('advertisements.ad_name', 'LIKE', "%$searchValue%");
+            });
+        }
+        $trashedAds = $query->paginate(10);
         return response()->json([
             'status' => true,
             'trashedAds' => $trashedAds,
@@ -213,6 +229,7 @@ class AdvertisementController extends Controller
     }
 
     public function getLatestAdvertisements(Request $request) {
+        $searchValue = $request->input('searchText', '');
         // Get the current date
         $currentDate = Carbon::now();
     
@@ -220,11 +237,19 @@ class AdvertisementController extends Controller
         $twoWeeksAgo = $currentDate->subWeeks(2);
 
         // Retrieve advertisements within the last two weeks
-        $latestAds = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
+        $query = Advertisement::leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
                 ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*')
                 ->where('advertisements.paused', 0)->where('advertisements.paused_at', null)
-                ->where('advertisements.created_at', '>=', $twoWeeksAgo)->orderBy('advertisements.created_at', 'desc')->paginate(10);
+                ->where('advertisements.created_at', '>=', $twoWeeksAgo)->orderBy('advertisements.created_at', 'desc');
     
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('users.firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('users.lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('advertisements.ad_name', 'LIKE', "%$searchValue%");
+            });
+        }
+        $latestAds = $query->paginate(10);
         return response()->json([
             'status' => true,
             'latestAds' => $latestAds,
@@ -246,13 +271,21 @@ class AdvertisementController extends Controller
     }
 
     public function getPausedAdvertisements(Request $request) {
+        $searchValue = $request->input('searchText', '');
 
-        $pausedAds = Advertisement::where('paused', '=', 1)
+        $query = Advertisement::where('paused', '=', 1)
             ->orderBy('paused_at', 'desc')
             ->leftJoin('users', 'users.id', '=', 'advertisements.advertiser_id')
-            ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*') // Select desired columns from both tables
-            ->paginate(10);
-    
+            ->select(DB::raw("CONCAT(users.firstname, ' ', users.lastname) AS advertiser_name"), 'advertisements.*'); // Select desired columns from both tables
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('users.firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('users.lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('advertisements.ad_name', 'LIKE', "%$searchValue%");
+            });
+        }
+        $pausedAds = $query->paginate(10);
         return response()->json([
             'status' => true,
             'pausedAds' => $pausedAds,

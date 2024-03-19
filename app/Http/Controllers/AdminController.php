@@ -216,9 +216,9 @@ class AdminController extends Controller
         
     }
 
-    public function getAllAdvertisers(){
-
-        $advertisers = User::select(
+    public function getAllAdvertisers(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $query = User::select(
                 'id',
                 'firstname',
                 'lastname',
@@ -244,8 +244,18 @@ class AdminController extends Controller
                 'created_at',
                 'updated_at',
                 )
-            ->where('role', 'Advertiser')->paginate(10);
+            ->where('role', 'Advertiser');
         
+            if (!empty($searchValue)) {
+                $query->where(function ($query) use ($searchValue) {
+                    $query->where('firstname', 'LIKE', "%$searchValue%")
+                        ->orWhere('lastname', 'LIKE', "%$searchValue%")
+                        ->orWhere('username', 'LIKE', "%$searchValue%")
+                        ->orWhere('email', 'LIKE', "%$searchValue%")
+                        ->orWhere('phone', 'LIKE', "%$searchValue%");
+                });
+            }
+            $advertisers = $query->paginate(10);
             return response()->json([
                 'status' => true,
                 'advertisers' => $advertisers,
@@ -296,10 +306,13 @@ class AdminController extends Controller
         $totalAdvertiser = User::where('role', 'Advertiser')
                             ->count();
         $activeAdvertisers = User::where('role', 'Advertiser')
-                        ->whereHas('advertisements') // Ensure users have at least one record in the advertisements table
-                        ->count();
-        $totalAds = Advertisement::where('expired', 0)
-                    ->where('expired_at', null)
+                            ->whereExists(function ($query) {
+                                $query->select(DB::raw(1))
+                                      ->from('advertisements')
+                                      ->whereRaw('advertisements.advertiser_id = users.id');
+                            })->count();
+        $totalAds = Advertisement::where('paused', 0)
+                    ->where('paused_at', null)
                     ->count();
         return response()->json([
             'status' => true,

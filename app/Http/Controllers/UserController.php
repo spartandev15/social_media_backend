@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Carbon\Carbon;
 
 use App\Models\User;
 use App\Models\AdvertiserPhoto;
@@ -93,6 +94,58 @@ class UserController extends Controller
                 'message' => "User not found",
             ], 404);
         }
+    }
+
+    public function getLatestAdvertisers(Request $request){
+        $searchValue = $request->input('searchText', '');
+        $currentDate = Carbon::now();
+    
+        // Calculate the date two weeks ago
+        $twoWeeksAgo = $currentDate->subWeeks(2);
+
+        $query = User::select(
+            'id',
+            'firstname',
+            'lastname',
+            'username',
+            'email',
+            'phone',
+            'age',
+            'gender',
+            'ethnicity',
+            'height',
+            'breast_size',
+            'eye_color',
+            'hair_color',
+            'body_type',
+            DB::raw('CONCAT("' . env("APP_URL") . '", profile_photo) AS profile_photo'),
+            'street_address',
+            'city',
+            'state',
+            'country',
+            'zip',
+            'role',
+            'plan',
+            'created_at',
+            'updated_at',
+            )
+        ->where('role', 'Advertiser')
+        ->where('created_at', '>=', $twoWeeksAgo)->orderBy('created_at', 'desc');
+    
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('firstname', 'LIKE', "%$searchValue%")
+                    ->orWhere('lastname', 'LIKE', "%$searchValue%")
+                    ->orWhere('username', 'LIKE', "%$searchValue%")
+                    ->orWhere('email', 'LIKE', "%$searchValue%")
+                    ->orWhere('phone', 'LIKE', "%$searchValue%");
+            });
+        }
+        $advertisers = $query->paginate(10);
+        return response()->json([
+            'status' => true,
+            'latestAdvertisers' => $advertisers,
+        ], 200);
     }
 
     public function updateAdvertiser(Request $request){
@@ -508,7 +561,7 @@ class UserController extends Controller
         }
     }
 
-    public function deleteAdvertiserPermanently($id){
+    public function deleteUserPermanently($id){
         $user = User::find($id);
         try{
             if($user){
