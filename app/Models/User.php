@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(AdvertiserPhoto::class, 'advertiser_id');
     }
 
+    public function availabilities()
+    {
+        return $this->hasMany(Availability::class, 'advertiser_id');
+    }
+
     public function advertiserPhotos()
     {
         return $this->hasMany(AdvertiserPhoto::class, 'advertiser_id');

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
@@ -31,6 +32,10 @@ Route::post('/forgot-password', [AuthController::class, 'forgotpassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
 
+// Home APIs
+Route::get('/get-top-primary-advertisers', [HomeController::class, 'getTopPrimaryAdvertisers']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::group(['middleware' => 'advertiser'],function(){
@@ -42,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-cover-photo', [UserController::class, 'updateCoverPhoto']);
         Route::post('/create-advertisement', [AdvertisementController::class, 'createAdvertisement']);
         Route::get('/get-advertisements/{id?}', [AdvertisementController::class, 'getAdvertisement']);
+        Route::get('/get-expired-advertisements', [AdvertisementController::class, 'getExpiredAdvertisement']);
         Route::delete('/delete-advertisement/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
         Route::post('/update-advertisement/{id}', [AdvertisementController::class, 'updateAdvertisement']);
         Route::get('/renew-advertisement/{id}', [AdvertisementController::class, 'renewAdvertisement']);

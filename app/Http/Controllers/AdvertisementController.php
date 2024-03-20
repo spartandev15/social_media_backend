@@ -15,9 +15,25 @@ use Carbon\Carbon;
 
 class AdvertisementController extends Controller
 {
-    public function getAdvertisement($id = null){
+    public function getAdvertisement(Request $request, $id = null){
         $advertiserId = $id ? $id : Auth::user()->id;
-        $Ads = Advertisement::where('advertiser_id', $advertiserId)->get();
+        $searchValue = $request->input('searchText', '');
+
+        $query = Advertisement::where('advertiser_id', $advertiserId)
+            ->where('expired', '=', 0)
+            ->whereNull('expired_at')
+            ->where('paused', '=', 0)
+            ->whereNull('paused_at');
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('ad_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('location', 'LIKE', "%$searchValue%")
+                    ->orWhere('state', 'LIKE', "%$searchValue%")
+                    ->orWhere('country', 'LIKE', "%$searchValue%");
+            });
+        }
+        $Ads = $query->paginate(10);
         return response()->json([
             'status' => true,
             'allAds' => $Ads,
@@ -310,6 +326,31 @@ class AdvertisementController extends Controller
         ], 401);
     }
 
+    public function getExpiredAdvertisement(Request $request) {
+        $searchValue = $request->input('searchText', '');
+
+        $query = Advertisement::where('advertiser_id', Auth::user()->id)
+            ->where('expired', '=', 1)
+            ->whereNotNull('expired_at')
+            ->where('paused', '=', 0)
+            ->whereNull('paused_at')
+            ->orderBy('expired_at', 'desc');
+
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('ad_name', 'LIKE', "%$searchValue%")
+                    ->orWhere('location', 'LIKE', "%$searchValue%")
+                    ->orWhere('state', 'LIKE', "%$searchValue%")
+                    ->orWhere('country', 'LIKE', "%$searchValue%");
+            });
+        }
+        $expiredAds = $query->paginate(10);
+        return response()->json([
+            'status' => true,
+            'expiredAds' => $expiredAds,
+        ], 200);
+    }
+
     public function createAvailability(Request $request){
         $inputValidation = Validator::make($request->all(), [
             'ad_id' => 'required',
@@ -339,12 +380,17 @@ class AdvertisementController extends Controller
     }
 
     public function getAvailabilities(Request $request){
-
-        $avails = Availability::select('advertisements.ad_name', 'availabilities.*')
+        $searchValue = $request->input('searchText', '');
+        $query = Availability::select('advertisements.ad_name', 'availabilities.*')
                     ->leftJoin('advertisements', 'availabilities.ad_id', '=', 'advertisements.id')
-                    ->where('advertisements.advertiser_id', Auth::user()->id)
-                    ->get();
+                    ->where('advertisements.advertiser_id', Auth::user()->id);
 
+        if (!empty($searchValue)) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('ad_name', 'LIKE', "%$searchValue%");
+            });
+        }
+        $avails = $query->paginate(10);
         return response()->json([
             'status' => true,
             'availabilities' => $avails,
