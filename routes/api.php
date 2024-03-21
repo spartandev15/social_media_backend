@@ -34,6 +34,9 @@ Route::post('/is-token-valid', [AuthController::class, 'isTokenValid']);
 
 // Home APIs
 Route::get('/get-top-primary-advertisers', [HomeController::class, 'getTopPrimaryAdvertisers']);
+Route::get('/get-advertiser-by-id/{id}', [UserController::class, 'getAdvertiser']);
+Route::get('/get-availability-by-ad-id/{id}', [AdvertisementController::class, 'getAvailabilityByAdvertisementId']);
+Route::get('/get-advertisements-by-advertiser-id/{id}', [AdvertisementController::class, 'getAdvertisements']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -46,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-my-account', [UserController::class, 'updateMyAccount']);
         Route::post('/update-cover-photo', [UserController::class, 'updateCoverPhoto']);
         Route::post('/create-advertisement', [AdvertisementController::class, 'createAdvertisement']);
-        Route::get('/get-advertisements/{id?}', [AdvertisementController::class, 'getAdvertisement']);
+        Route::get('/get-advertisements/{id?}', [AdvertisementController::class, 'getAdvertisements']);
         Route::get('/get-expired-advertisements', [AdvertisementController::class, 'getExpiredAdvertisement']);
         Route::delete('/delete-advertisement/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
         Route::post('/update-advertisement/{id}', [AdvertisementController::class, 'updateAdvertisement']);
@@ -68,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get-user/{id?}', [AdminController::class, 'getUser']);
         Route::get('/get-advertiser-by-admin/{id?}', [UserController::class, 'getAdvertiser']);
         Route::get('/get-advertisement-by-id/{id?}', [AdvertisementController::class, 'getAdvertisementById']);
-        Route::get('/get-advertisements-by-admin/{id?}', [AdvertisementController::class, 'getAdvertisement']);
+        Route::get('/get-advertisements-by-admin/{id?}', [AdvertisementController::class, 'getAdvertisements']);
         Route::delete('/delete-advertisement-by-admin/{id}', [AdvertisementController::class, 'deleteAdvertisement']);
         Route::delete('/delete-user-permanently/{id}', [UserController::class, 'deleteUserPermanently']);
         Route::get('/get-latest-advertisers', [UserController::class, 'getLatestAdvertisers']);

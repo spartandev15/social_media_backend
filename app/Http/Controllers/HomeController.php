@@ -41,11 +41,14 @@ class HomeController extends Controller
                 'users.created_at',
                 'users.updated_at',
             )
-            ->where('plan', 'Premium')
+            ->where('role', 'Advertiser')
+            ->orderByRaw("FIELD(plan, 'Premium', 'Standard', 'Basic', 'Free')")
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('advertisements')
-                    ->whereRaw('advertisements.advertiser_id = users.id');
+                    ->whereRaw('advertisements.advertiser_id = users.id')
+                    ->where('expired', '=', 0)
+                    ->where('paused', '=', 0);
             });
 
             $query1 = clone $query;
@@ -58,14 +61,21 @@ class HomeController extends Controller
             }
 
             $newQuery->distinct();
+
+            $latestQuery = clone $newQuery;
             if (!empty($city)) {
                 $newQuery->where(function ($newQuery) use ($city) {
                     $newQuery->where('users.city', 'LIKE', "%$city%");
                 });
             }
+            if(count($newQuery->get()) > 0){
+                $finalQuery = clone $newQuery;
+            }else{
+                $finalQuery = $latestQuery;
+            }
             //then just query without availabilities
 
-        $topPrimaryAdvertisers = $newQuery->paginate(10);
+        $topPrimaryAdvertisers = $finalQuery->paginate(10);
         return response()->json([
             'status' => true,
             'topPrimaryAdvertisers' => $topPrimaryAdvertisers,

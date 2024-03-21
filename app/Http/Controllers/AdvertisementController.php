@@ -15,7 +15,7 @@ use Carbon\Carbon;
 
 class AdvertisementController extends Controller
 {
-    public function getAdvertisement(Request $request, $id = null){
+    public function getAdvertisements(Request $request, $id = null){
         $advertiserId = $id ? $id : Auth::user()->id;
         $searchValue = $request->input('searchText', '');
 
@@ -394,6 +394,15 @@ class AdvertisementController extends Controller
         return response()->json([
             'status' => true,
             'availabilities' => $avails,
+        ], 200);
+    }
+
+    public function getAvailabilityByAdvertisementId($id){
+        $availability = Availability::where('ad_id', $id)->first();
+
+        return response()->json([
+            'status' => true,
+            'availability' => $availability,
         ], 200);
     }
 
